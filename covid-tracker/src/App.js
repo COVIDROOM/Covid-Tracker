@@ -1,18 +1,33 @@
 import { useState,useEffect} from 'react';
-import {FormControl,Select,MenuItem,Card,CardContent,Typography} from '@material-ui/core';
+import {FormControl,Select,MenuItem,Card,CardContent} from '@material-ui/core';
 import InfoBox from './components/InfoBox';
 import Map from './components/Map'; 
 import './App.css';
 
 function App() {
-  const[countries,setCountries]=useState([]);  //how to write variable in reacct -useState
+
+  const[countries,setCountries]=useState([]);//how to write variable in reacct -useState
   const[country,setCountry]=useState('worldwide');
+  const[countryInfo,setCountryInfo]=useState({});
+
+
+  
+  useEffect(()=>{
+    fetch("https://disease.sh/v3/covid-19/all")
+   .then(response =>response.json())
+   .then((data) => {
+        setCountryInfo(data);
+      });
+  },[]);
+ 
+
+ 
   useEffect(()=>{                          //runs a piece of code,based on given condition
     //the code inside here will run once
     //when the component loads and not again
     //async-->send a request,wait for it,do something
     const getCountriesData=async()=>{
-      fetch("https://corona.lmao.ninja/v3/covid-19/countries")
+      fetch("https://disease.sh/v3/covid-19/countries")
       .then((response)=> response.json())
       .then((data)=>{
         const countries=data.map((item)=>(
@@ -23,15 +38,26 @@ function App() {
           })
         );
         setCountries(countries)
-      })
-    }
+      });
+    };
     getCountriesData()
   },[]);
 
-  const onCountryChange=(event) =>{
+
+  const onCountryChange= async (event)=>{
     const countryCode=event.target.value;
-    setCountry(countryCode);
-  }
+    //setCountry(countryCode);
+    const url= countryCode === "Worldwide"
+    ?  "https://disease.sh/v3/covid-19/all"
+    :   `https://disease.sh/v3/covid-19/countries/${countryCode}`;
+    
+    await fetch(url)
+    .then(response =>response.json())
+    .then((data) =>{
+      setCountry( countryCode);
+      setCountryInfo(data);
+    });
+  };
 
   return (
     <div className="app">
@@ -39,7 +65,11 @@ function App() {
         <div className="app_header">
         <h1>Covid-19</h1>
         <FormControl className="app_dropdown">
-          <Select variant="outlined" value={country} onChange={onCountryChange}>
+          <Select 
+          variant="outlined" 
+          value={country} 
+          onChange={onCountryChange}
+          >
             <MenuItem value="worldwide">Worldwide</MenuItem>
             {countries.map(country=>
             <MenuItem value={country.value}>{country.name}</MenuItem>)
@@ -48,9 +78,24 @@ function App() {
         </FormControl>
         </div>  
         <div className="app_status">
-          <InfoBox title="Coronavirus Cases" total={4000}  cases={500}/>
-          <InfoBox title="Recovered"  total={700} cases={4000}/>
-          <InfoBox title="Deaths" total={300} cases={3000}/>
+        <InfoBox
+            title="cases"
+            cases={countryInfo.todayCases}
+            total={countryInfo.cases}
+          />
+          <InfoBox
+          
+            title="Recovered"
+           
+            cases={countryInfo.todayRecovered}
+            total={countryInfo.recovered}
+          />
+          <InfoBox
+           
+            title="Deaths"
+            cases={countryInfo.todayDeaths}
+            total={countryInfo.deaths}
+          />
         </div>
         <Map/>
 
