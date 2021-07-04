@@ -2,10 +2,21 @@
   margin: 0;
 }
 
+body{
+  background-color: #f1efeb;
+}
+
 .app_header{
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+  justify-content: space-between;
+
+}
+
+.app_status{
+  display: flex;
+  /* justify-content:space-around; */
   justify-content: space-between;
 
 }
