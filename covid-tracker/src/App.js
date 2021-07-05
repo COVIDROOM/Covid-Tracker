@@ -2,14 +2,19 @@ import { useState,useEffect} from 'react';
 import {FormControl,Select,MenuItem,Card,CardContent} from '@material-ui/core';
 import InfoBox from './components/InfoBox';
 import Map from './components/Map'; 
+import Table from './components/Table';
+import { sortData } from './components/Util';
 import './App.css';
+import 'leaflet/dist/leaflet.css';
 
 function App() {
 
   const[countries,setCountries]=useState([]);//how to write variable in reacct -useState
   const[country,setCountry]=useState('worldwide');
   const[countryInfo,setCountryInfo]=useState({});
-
+  const [tableData, setTableData] = useState([]);
+  const [mapCenter, setMapCenter] = useState({ lat: 34.80746, lng: -40.4796 });
+  const [mapZoom, setMapZoom] = useState(3);
 
   
   useEffect(()=>{
@@ -37,7 +42,9 @@ function App() {
               
           })
         );
-        setCountries(countries)
+        let sortedData = sortData(data);
+        setTableData(sortedData);
+        setCountries(countries);
       });
     };
     getCountriesData()
@@ -60,9 +67,10 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <div className="app">   
       <div className="app_left">
-        <div className="app_header">
+      <div className="app_header">
+        <img src="" alt=""></img>
         <h1>Covid-19</h1>
         <FormControl className="app_dropdown">
           <Select 
@@ -83,31 +91,32 @@ function App() {
             cases={countryInfo.todayCases}
             total={countryInfo.cases}
           />
-          <InfoBox
+        <InfoBox
+        
+          title="Recovered"
           
-            title="Recovered"
-           
-            cases={countryInfo.todayRecovered}
-            total={countryInfo.recovered}
-          />
-          <InfoBox
-           
-            title="Deaths"
-            cases={countryInfo.todayDeaths}
-            total={countryInfo.deaths}
-          />
+          cases={countryInfo.todayRecovered}
+          total={countryInfo.recovered}
+        />
+        <InfoBox
+          
+          title="Deaths"
+          cases={countryInfo.todayDeaths}
+          total={countryInfo.deaths}
+        />
         </div>
-        <Map/>
+        <Map  center={mapCenter} zoom={mapZoom}/>
 
       </div>
       <Card className="app_right">
         <CardContent>
-          <h3>World wide New Case </h3>
+        <h3>Deaths By Country </h3>
+          <Table countries={tableData}/>
+         
           <h3>Live Cases</h3>
 
         </CardContent>
       </Card>
-      
     </div>
   );
 }
